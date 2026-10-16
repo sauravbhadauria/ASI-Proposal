@@ -63,6 +63,27 @@ button.del{background:transparent;color:#b3261e;padding:4px 0;font-size:13px}
 .terms h4{margin:0 0 4px;color:#26418f}
 .foot{margin-top:22px;padding-top:12px;border-top:1px solid #d3dcf0;font-size:12px;color:#5a6785;display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:600px){.foot{grid-template-columns:1fr}}
+@media(max-width:600px){
+input,select,textarea{font-size:16px}
+.top img{height:44px}
+.sheet{padding:16px 12px;overflow-x:visible}
+.sheet .hd img{height:46px}
+.sheet h3{font-size:20px}
+.meta{flex-direction:column;gap:2px}
+.sheet table,.sheet tbody,.sheet tr,.sheet td{display:block;width:100%;min-width:0}
+.sheet thead{display:none}
+.sheet tbody tr{border:1px solid #d3dcf0;border-radius:8px;margin-bottom:10px;overflow:hidden}
+.sheet td{display:flex;justify-content:space-between;align-items:baseline;gap:12px;text-align:right;padding:8px 10px;border-bottom:1px solid #e6ecf8;white-space:normal}
+.sheet td[data-l]::before{content:attr(data-l);font-weight:600;color:#5a6785;text-align:left;flex:none}
+.sheet td:first-child{display:block;text-align:left;font-weight:700;background:#f0f4fc;color:#0f2a6b}
+.sheet td:empty{display:none}
+.sheet tr.tot td,.sheet tr.grand td{border-bottom:0}
+.sheet tr.tot td:first-child{background:#e8eefb}
+.sheet tr.grand td:first-child{background:#26418f;color:#fff}
+.sheet tr.grand td{font-size:16px}
+.sheet td .sm{font-weight:400}
+.terms{font-size:13px}
+}
 @media print{
 :root{padding:0}
 .no-print{display:none!important}
@@ -106,7 +127,7 @@ body{background:#fff}
 <div class="panel"><h2>Terms</h2>
 <label>Terms &amp; Conditions (Optional)<textarea id="terms" placeholder="e.g. Quote valid for 30 days. Payment terms..."></textarea></label></div>
 
-<div class="bar"><button type="button" id="copyBtn">Copy Proposal As Image</button><button type="button" id="printBtn" class="sec">Print / Save As PDF</button><span class="hint" id="copyMsg" role="status" style="margin:0">The proposal below updates as you type. Copy it as an image to paste into an email or chat, or print it.</span></div>
+<div class="bar"><button type="button" id="copyBtn">Copy Proposal As Image</button><button type="button" id="printBtn" class="sec">Save As PDF</button><span class="hint" id="copyMsg" role="status" style="margin:0">The proposal below updates as you type. Copy it as an image to paste into an email or chat, or save it as a PDF.</span></div>
 </div>
 
 <div class="sheet" id="sheet">
@@ -121,10 +142,12 @@ body{background:#fff}
 <table><thead><tr><th>Item</th><th class="r">Standard Price</th><th class="r">Subscription Type</th><th class="r">Discount</th><th class="r">Net Price</th></tr></thead>
 <tbody id="vRows"></tbody></table>
 <div class="terms" id="vTerms"></div>
+<p style="text-align:center;margin:24px 0 0;padding-top:14px;border-top:1px solid #d3dcf0;font-weight:600;color:#26418f;font-size:14px">Thank you for considering ASI. We look forward to working with you and supporting your business growth.</p>
 </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 var SL=[[15,"1 to 15",98,130,99],[25,"16 to 25",115,154,99],[35,"26 to 35",122,164,99],[50,"36 to 50",130,182,99],[75,"51 to 75",150,206,99],[100,"76 to 100",168,224,99],[125,"101 to 125",182,234,199],[150,"126 to 150",196,252,199],[200,"151 to 200",210,266,199],[1e9,"200+",234,290,199]];
 var SI=[[15,"1 to 15",2000,3500,3000],[25,"16 to 25",2750,4500,3000],[35,"26 to 35",3500,5500,3000],[50,"36 to 50",4250,6500,3000],[75,"51 to 75",5000,7500,5000],[100,"76 to 100",5750,8500,5000],[125,"101 to 125",6750,9750,5000],[150,"126 to 150",7750,11250,10000],[200,"151 to 200",8750,13750,10000],[1e9,"200+",10000,15250,10000]];
@@ -143,7 +166,7 @@ function mult(t){return{Monthly:1,Quarterly:3,"Half-Yearly":6,Yearly:12}[t]||1}
 function dc(base,v,t){v=Math.max(0,num(v));if(t!=="$")v=Math.min(100,v);var a=t==="$"?Math.min(v,base):base*v/100;return{a:a,t:t==="$"?money(a):v+"%"}}
 function slab(r){var T=$("cur").value==="INR"?SI:SL;for(var i=0;i<T.length;i++)if(r<=T[i][0])return T[i];return null}
 function row(name,sub,std,disc,net,st){
- return '<tr><td>'+name+(sub?'<span class="sm">'+sub+'</span>':'')+'</td><td class="r">'+std+'</td><td class="r">'+(st||"—")+'</td><td class="r">'+disc+'</td><td class="r">'+net+'</td></tr>'}
+ return '<tr><td>'+name+(sub?'<span class="sm">'+sub+'</span>':'')+'</td><td class="r" data-l="Standard Price">'+std+'</td><td class="r" data-l="Subscription Type">'+(st||"—")+'</td><td class="r" data-l="Discount">'+disc+'</td><td class="r" data-l="Net Price">'+net+'</td></tr>'}
 function render(){
  var d=$("pDate").value;
  var fd=function(x){return x?new Date(x+"T00:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}):"—"};$("pExp").min=d;$("vDate").textContent="Proposal Create Date: "+fd(d);$("vCur").textContent="All Prices Are In "+$("cur").value;var xp=$("pExp").value;$("vExp").textContent=xp?"Proposal Expiry Date: "+fd(xp):"";
@@ -202,12 +225,27 @@ $("copyBtn").onclick=function(){
  var msg=$("copyMsg"),sh=$("sheet");
  if(!window.html2canvas){msg.textContent="The image tool is still loading. Please try again in a moment.";return}
  msg.textContent="Creating the proposal image...";
- var blobP=html2canvas(sh,{scale:2,backgroundColor:"#ffffff",useCORS:true,width:sh.scrollWidth,windowWidth:Math.max(sh.scrollWidth,document.documentElement.clientWidth)}).then(function(cv){lastCv=cv;return new Promise(function(r){cv.toBlob(r,"image/png")})});
+ var blobP=html2canvas(sh,{scale:2,backgroundColor:"#ffffff",useCORS:true,windowWidth:1000}).then(function(cv){lastCv=cv;return new Promise(function(r){cv.toBlob(r,"image/png")})});
  var done=function(){msg.textContent="Proposal image copied. Paste it anywhere you want to share it."};
  var fb=function(){blobP.then(function(){if(lastCv){showImg(lastCv.toDataURL("image/png"));msg.textContent="The browser blocked direct copying. Right-click (or long-press) the image and choose Copy Image."}else{msg.textContent="Could not create the image. Please try again."}},function(){msg.textContent="Could not create the image. Please try again."})};
  try{navigator.clipboard.write([new ClipboardItem({"image/png":blobP})]).then(done,fb)}catch(x){fb()}
 };
-$("printBtn").onclick=function(){try{window.print()}catch(e){alert("Use your browser's Print option (Ctrl/Cmd + P) and choose Save as PDF.")}};
+$("printBtn").onclick=function(){
+ var msg=$("copyMsg"),sh=$("sheet");
+ if(!window.html2canvas||!window.jspdf){msg.textContent="The PDF tool is still loading. Please try again in a moment.";return}
+ msg.textContent="Creating the PDF...";
+ html2canvas(sh,{scale:2,backgroundColor:"#ffffff",useCORS:true,windowWidth:1000}).then(function(cv){
+  var pdf=new window.jspdf.jsPDF({unit:"mm",format:"a4"}),m=10,w=210-2*m,pageH=297-2*m,sliceH=Math.floor(pageH*cv.width/w),off=0,first=true;
+  while(off<cv.height){var hh=Math.min(sliceH,cv.height-off),c=document.createElement("canvas");c.width=cv.width;c.height=hh;var cx=c.getContext("2d");cx.fillStyle="#fff";cx.fillRect(0,0,c.width,hh);cx.drawImage(cv,0,off,cv.width,hh,0,0,cv.width,hh);if(!first)pdf.addPage();pdf.addImage(c.toDataURL("image/jpeg",0.95),"JPEG",m,m,w,hh*w/cv.width);off+=hh;first=false}
+  var blob=pdf.output("blob"),hn=($("cCo").value||"").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,""),fn="ASI-Sales-Proposal"+(hn?"-"+hn:"")+".pdf";
+  var links=function(){var u=URL.createObjectURL(blob);msg.innerHTML='Your PDF is ready: <a href="'+u+'" download="'+fn+'" style="color:var(--blue);font-weight:600">Download PDF</a> &middot; <a href="'+u+'" target="_blank" rel="noopener" style="color:var(--blue);font-weight:600">Open PDF</a>'};
+  var useP=(window.claude&&claude.use)?claude.use("downloads"):Promise.resolve(null);
+  return useP.then(function(d){
+   if(!d){links();return}
+   return d.save({filename:fn,data:blob}).then(function(){msg.textContent="PDF saved."},function(err){if(err&&err.code==="declined")msg.textContent="Save cancelled.";else links()})
+  },function(){links()});
+ }).catch(function(){msg.textContent="Could not create the PDF. Please try again."})
+};
 $("pDate").value=new Date().toISOString().slice(0,10);
 render();
 </script>
