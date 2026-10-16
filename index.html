@@ -106,7 +106,7 @@ body{background:#fff}
 <div class="panel"><h2>Terms</h2>
 <label>Terms &amp; Conditions (Optional)<textarea id="terms" placeholder="e.g. Quote valid for 30 days. Payment terms..."></textarea></label></div>
 
-<div class="bar"><button type="button" id="copyBtn">Copy Proposal As Image</button><button type="button" id="printBtn" class="sec">Save As PDF</button><span class="hint" id="copyMsg" role="status" style="margin:0">The proposal below updates as you type. Copy it as an image to paste into an email or chat, or save it as a PDF.</span></div>
+<div class="bar"><button type="button" id="copyBtn">Copy Proposal As Image</button><button type="button" id="printBtn" class="sec">Print / Save As PDF</button><span class="hint" id="copyMsg" role="status" style="margin:0">The proposal below updates as you type. Copy it as an image to paste into an email or chat, or print it.</span></div>
 </div>
 
 <div class="sheet" id="sheet">
@@ -121,12 +121,10 @@ body{background:#fff}
 <table><thead><tr><th>Item</th><th class="r">Standard Price</th><th class="r">Subscription Type</th><th class="r">Discount</th><th class="r">Net Price</th></tr></thead>
 <tbody id="vRows"></tbody></table>
 <div class="terms" id="vTerms"></div>
-<p style="text-align:center;margin:24px 0 0;padding-top:14px;border-top:1px solid #d3dcf0;font-weight:600;color:#26418f;font-size:14px">Thank you for considering ASI. We look forward to working with you and supporting your business growth.</p>
 </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 var SL=[[15,"1 to 15",98,130,99],[25,"16 to 25",115,154,99],[35,"26 to 35",122,164,99],[50,"36 to 50",130,182,99],[75,"51 to 75",150,206,99],[100,"76 to 100",168,224,99],[125,"101 to 125",182,234,199],[150,"126 to 150",196,252,199],[200,"151 to 200",210,266,199],[1e9,"200+",234,290,199]];
 var SI=[[15,"1 to 15",2000,3500,3000],[25,"16 to 25",2750,4500,3000],[35,"26 to 35",3500,5500,3000],[50,"36 to 50",4250,6500,3000],[75,"51 to 75",5000,7500,5000],[100,"76 to 100",5750,8500,5000],[125,"101 to 125",6750,9750,5000],[150,"126 to 150",7750,11250,10000],[200,"151 to 200",8750,13750,10000],[1e9,"200+",10000,15250,10000]];
@@ -209,21 +207,7 @@ $("copyBtn").onclick=function(){
  var fb=function(){blobP.then(function(){if(lastCv){showImg(lastCv.toDataURL("image/png"));msg.textContent="The browser blocked direct copying. Right-click (or long-press) the image and choose Copy Image."}else{msg.textContent="Could not create the image. Please try again."}},function(){msg.textContent="Could not create the image. Please try again."})};
  try{navigator.clipboard.write([new ClipboardItem({"image/png":blobP})]).then(done,fb)}catch(x){fb()}
 };
-$("printBtn").onclick=function(){
- var msg=$("copyMsg"),sh=$("sheet");
- if(!window.html2canvas||!window.jspdf){msg.textContent="The PDF tool is still loading. Please try again in a moment.";return}
- msg.textContent="Creating the PDF...";
- html2canvas(sh,{scale:2,backgroundColor:"#ffffff",useCORS:true,width:sh.scrollWidth,windowWidth:Math.max(sh.scrollWidth,document.documentElement.clientWidth)}).then(function(cv){
-  var pdf=new window.jspdf.jsPDF({unit:"mm",format:"a4"}),m=10,w=210-2*m,pageH=297-2*m,sliceH=Math.floor(pageH*cv.width/w),off=0,first=true;
-  while(off<cv.height){var hh=Math.min(sliceH,cv.height-off),c=document.createElement("canvas");c.width=cv.width;c.height=hh;var cx=c.getContext("2d");cx.fillStyle="#fff";cx.fillRect(0,0,c.width,hh);cx.drawImage(cv,0,off,cv.width,hh,0,0,cv.width,hh);if(!first)pdf.addPage();pdf.addImage(c.toDataURL("image/jpeg",0.95),"JPEG",m,m,w,hh*w/cv.width);off+=hh;first=false}
-  var blob=pdf.output("blob"),hn=($("cCo").value||"").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,""),fn="ASI-Sales-Proposal"+(hn?"-"+hn:"")+".pdf";
-  var useP=(window.claude&&claude.use)?claude.use("downloads"):Promise.resolve(null);
-  return useP.then(function(d){
-   if(!d){msg.textContent="Saving files is not available in this view. Open the page in Claude to save the PDF.";return}
-   return d.save({filename:fn,data:blob}).then(function(){msg.textContent="PDF saved."},function(err){msg.textContent=(err&&err.code==="declined")?"Save cancelled.":"Could not save the PDF. Please try again."})
-  });
- }).catch(function(){msg.textContent="Could not create the PDF. Please try again."})
-};
+$("printBtn").onclick=function(){try{window.print()}catch(e){alert("Use your browser's Print option (Ctrl/Cmd + P) and choose Save as PDF.")}};
 $("pDate").value=new Date().toISOString().slice(0,10);
 render();
 </script>
